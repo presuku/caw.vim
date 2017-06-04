@@ -162,3 +162,67 @@ function! s:wrap.uncomment_normal(lnum) abort
         call caw#setline(a:lnum, indent . line)
     endif
 endfunction
+
+function! s:get_both_sides_space_cols_without_commented_line(skip_blank_line, from_lnum, to_lnum, self) abort
+    let left  = 1/0
+    let right = 1
+    let lnum = a:from_lnum - 1
+    for line in caw#getline(a:from_lnum, a:to_lnum)
+        let lnum = lnum + 1
+        if a:skip_blank_line && line =~ '^\s*$'
+            continue    " Skip blank line.
+        endif
+        if a:self.has_comment_normal(lnum)
+            continue    " Commented line.
+        endif
+        let l  = strlen(matchstr(line, '^\s*')) + 1
+        let r = strlen(line) - strlen(matchstr(line, '\s*$')) + 1
+        if l < left
+            let left = l
+        endif
+        if r > right
+            let right = r
+        endif
+    endfor
+    return [left, right]
+endfunction
+
+function! s:wrap.toggle_visual() abort
+    let wiseness = get({
+    \   'v': 'characterwise',
+    \   'V': 'linewise',
+    \   "\<C-v>": 'blockwise',
+    \}, caw#context().visualmode, '')
+    if wiseness != ''
+    \   && has_key(self, 'comment_visual_' . wiseness)
+        call call(self['comment_visual_' . wiseness], [], self)
+        return
+    endif
+
+    if caw#get_var('caw_wrap_align')
+        let [left_col, right_col] =
+        \   s:get_both_sides_space_cols_without_commented_line(
+        \       caw#get_var('caw_wrap_skip_blank_line'),
+        \       caw#context().firstline,
+        \       caw#context().lastline, self)
+    endif
+
+    let skip_blank_line = caw#get_var('caw_wrap_skip_blank_line')
+    for lnum in range(
+    \   caw#context().firstline,
+    \   caw#context().lastline
+    \)
+      if skip_blank_line && caw#getline(lnum) =~ '^\s*$'
+        continue    " Skip blank line.
+      endif
+      if !self.has_comment_normal(lnum)
+        if exists('left_col') && exists('right_col')
+          call self.comment_normal(lnum, left_col, right_col)
+        else
+          call self.comment_normal(lnum)
+        endif
+      else
+        call self.uncomment_normal(lnum)
+      endif
+    endfor
+endfunction

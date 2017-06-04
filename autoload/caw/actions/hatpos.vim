@@ -108,3 +108,32 @@ function! s:hatpos.uncomment_normal(lnum) abort
         endif
     endif
 endfunction
+
+function! s:hatpos.toggle_visual() abort
+    if caw#get_var('caw_hatpos_align')
+        let min_indent_num =
+        \   caw#get_min_indent_num(
+        \       1,
+        \       caw#context().firstline,
+        \       caw#context().lastline)
+    endif
+
+    let skip_blank_line = caw#get_var('caw_hatpos_skip_blank_line')
+    for lnum in range(
+    \   caw#context().firstline,
+    \   caw#context().lastline
+    \)
+        if skip_blank_line && caw#getline(lnum) =~ '^\s*$'
+            continue    " Skip blank line.
+        endif
+        if !self.has_comment_normal(lnum)
+            if exists('min_indent_num')
+                call self.comment_normal(lnum, 0, min_indent_num)
+            else
+                call self.comment_normal(lnum, 0)
+            endif
+        else
+            call self.uncomment_normal(lnum)
+        endif
+    endfor
+endfunction

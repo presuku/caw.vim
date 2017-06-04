@@ -25,12 +25,16 @@ function! s:togglable.toggle() abort
             call self.comment()
         endif
     else
-        if self.has_all_comment()
-            " All lines have comment strings.
-            call self.uncomment()
+        if caw#get_var('caw_enable_toggle_each_line')
+            call self.toggle_visual()
         else
-            " Some lines have comment strings, or no lines have comment strings.
-            call self.comment()
+            if self.has_all_comment()
+                " All lines have comment strings.
+                call self.uncomment()
+            else
+                " Some lines have comment strings, or no lines have comment strings.
+                call self.comment()
+            endif
         endif
     endif
 endfunction
