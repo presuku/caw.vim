@@ -21,6 +21,7 @@ let s:plug.deprecated = {
 " Global variables {{{
 
 let g:caw_no_default_keymappings = get(g:, 'caw_no_default_keymappings', 0)
+let g:caw_enable_toggle_each_line = get(g:, 'caw_enable_toggle_each_line', 0)
 let g:caw_operator_keymappings = get(g:, 'caw_operator_keymappings', 0)
 if globpath(&runtimepath, 'autoload/operator/user.vim') !=# ''
   let s:operator_user_installed = 1

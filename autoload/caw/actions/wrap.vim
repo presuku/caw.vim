@@ -93,7 +93,11 @@ function! s:wrap.comment_visual() abort
     let line = getline(lnum)
     if !skip_blank_line || line !~# '^\s*$'
       let options = align ? {'left_col': left_col, 'right_col': right_col} : {}
-      let line = self.get_comment_line(lnum, options)
+      if caw#get_var('caw_enable_toggle_each_line') && self.has_any_comment(lnum, lnum)
+        let line = self.get_uncomment_line(lnum, options)
+      else
+        let line = self.get_comment_line(lnum, options)
+      endif
     endif
     let lines += [line]
   endfor
